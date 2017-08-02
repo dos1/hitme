@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=HIT ME
+Exec=hitme
+Comment=HIT ME HIT ME HIT ME HIT ME
+Icon=hitme
+Terminal=false
+Categories=Game;ArcadeGame;
