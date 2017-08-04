@@ -145,6 +145,8 @@ void Gamestate_Unload(struct Game *game, struct GamestateResources* data) {
 	al_destroy_font(data->font);
 	al_destroy_font(data->comicsans);
 	al_destroy_bitmap(data->checkerboard);
+	al_destroy_sample_instance(data->key);
+	al_destroy_sample(data->key_sample);
 	free(data);
 }
 
@@ -158,6 +160,7 @@ void Gamestate_Start(struct Game *game, struct GamestateResources* data) {
 	data->counter = 0;
 	data->score = 0;
 	data->sps = 0;
+	data->max = 0;
 }
 
 void Gamestate_Stop(struct Game *game, struct GamestateResources* data) {
