@@ -18,13 +18,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "defines.h"
-#include <stdio.h>
-#include <signal.h>
 #include "common.h"
+#include "defines.h"
 #include <libsuperderpy.h>
+#include <signal.h>
+#include <stdio.h>
 
-void derp(int sig) {
+static _Noreturn void derp(int sig) {
 	ssize_t __attribute__((unused)) n = write(STDERR_FILENO, "Segmentation fault\nI just don't know what went wrong!\n", 54);
 	abort();
 }
@@ -37,23 +37,23 @@ int main(int argc, char** argv) {
 	al_set_org_name("dosowisko.net");
 	al_set_app_name(LIBSUPERDERPY_GAMENAME_PRETTY);
 
-	struct Game *game = libsuperderpy_init(argc, argv, LIBSUPERDERPY_GAMENAME, (struct Viewport){320, 180});
+	struct Game* game = libsuperderpy_init(argc, argv, LIBSUPERDERPY_GAMENAME,
+		(struct Params){
+			320,
+			180,
+			.handlers = (struct Handlers){
+				.event = GlobalEventHandler,
+				.destroy = DestroyGameData,
+			},
+		});
 	if (!game) { return 1; }
-
-	al_set_window_title(game->display, LIBSUPERDERPY_GAMENAME_PRETTY);
 
 	LoadGamestate(game, "dosowisko");
 	StartGamestate(game, "dosowisko");
 
 	game->data = CreateGameData(game);
 
-	game->eventHandler = &GlobalEventHandler;
+	al_hide_mouse_cursor(game->display);
 
-	libsuperderpy_run(game);
-
-	DestroyGameData(game, game->data);
-
-	libsuperderpy_destroy(game);
-
-	return 0;
+	return libsuperderpy_run(game);
 }

@@ -20,28 +20,30 @@
 
 #include "../common.h"
 #include <allegro5/allegro_color.h>
-#include <math.h>
 #include <libsuperderpy.h>
+#include <math.h>
 
 struct GamestateResources {
-		// This struct is for every resource allocated and used by your gamestate.
-		// It gets created on load and then gets passed around to all other function calls.
-		ALLEGRO_FONT *font, *comicsans;
-		ALLEGRO_BITMAP *checkerboard;
-		ALLEGRO_SAMPLE *key_sample;
-		ALLEGRO_SAMPLE_INSTANCE *key;
-		int blink_counter;
-		int color;
-		int randx, randy;
-		int score;
-		int counter;
-		int sps;
-		int max;
+	// This struct is for every resource allocated and used by your gamestate.
+	// It gets created on load and then gets passed around to all other function calls.
+	ALLEGRO_FONT *font, *comicsans;
+	ALLEGRO_BITMAP* checkerboard;
+	ALLEGRO_SAMPLE* key_sample;
+	ALLEGRO_SAMPLE_INSTANCE* key;
+	int blink_counter;
+	int color;
+	int randx, randy;
+	int score;
+	int counter;
+	int sps;
+	int max;
 };
 
 int Gamestate_ProgressCount = 1; // number of loading steps as reported by Gamestate_Load
 
-void Gamestate_Logic(struct Game *game, struct GamestateResources* data) {
+void Gamestate_Logic(struct Game* game, struct GamestateResources* data, double delta) {}
+
+void Gamestate_Tick(struct Game* game, struct GamestateResources* data) {
 	// Called 60 times per second. Here you should do all your game logic.
 	data->blink_counter++;
 	if (data->blink_counter == 60) {
@@ -55,40 +57,38 @@ void Gamestate_Logic(struct Game *game, struct GamestateResources* data) {
 	data->counter++;
 }
 
-void Gamestate_Draw(struct Game *game, struct GamestateResources* data) {
+void Gamestate_Draw(struct Game* game, struct GamestateResources* data) {
 	// Called as soon as possible, but no sooner than next Gamestate_Logic call.
 	// Draw everything to the screen here.
-	al_clear_to_color(al_color_hsv(fabs(sin(data->color/360.0)) * 360, 0.75, 0.5 + sin(data->color/20.0)/20.0));
-
+	al_clear_to_color(al_color_hsv(fabs(sin(data->color / 360.0)) * 360, 0.75, 0.5 + sin(data->color / 20.0) / 20.0));
 
 	if (data->blink_counter < 50) {
-		al_draw_text(data->comicsans, al_map_rgb(255,255,255), data->randx + game->viewport.width / 2, data->randy + game->viewport.height / 2 - 72,
-		             ALLEGRO_ALIGN_CENTRE, "HIT ME");
+		al_draw_text(data->comicsans, al_map_rgb(255, 255, 255), data->randx + game->viewport.width / 2, data->randy + game->viewport.height / 2 - 72,
+			ALLEGRO_ALIGN_CENTRE, "HIT ME");
 	}
 
-	al_draw_textf(data->font, al_map_rgb(255,255,255), -data->randx*0.8 + (game->viewport.width / 2) - 20, -data->randy/2 + game->viewport.height - 38,
-	             ALLEGRO_ALIGN_CENTRE, "%d POINTS/SEC", data->sps);
-	al_draw_textf(data->font, al_map_rgb(255,255,255), -data->randx/3 + (game->viewport.width / 2) + 35, data->randy/3 + game->viewport.height - 24,
-	             ALLEGRO_ALIGN_CENTRE, "%d BEST", data->max);
-
+	al_draw_textf(data->font, al_map_rgb(255, 255, 255), -data->randx * 0.8 + (game->viewport.width / 2) - 20, -data->randy / 2 + game->viewport.height - 38,
+		ALLEGRO_ALIGN_CENTRE, "%d POINTS/SEC", data->sps);
+	al_draw_textf(data->font, al_map_rgb(255, 255, 255), -data->randx / 3 + (game->viewport.width / 2) + 35, data->randy / 3 + game->viewport.height - 24,
+		ALLEGRO_ALIGN_CENTRE, "%d BEST", data->max);
 
 	al_draw_bitmap(data->checkerboard, 0, 0, 0);
 }
 
-void Gamestate_ProcessEvent(struct Game *game, struct GamestateResources* data, ALLEGRO_EVENT *ev) {
+void Gamestate_ProcessEvent(struct Game* game, struct GamestateResources* data, ALLEGRO_EVENT* ev) {
 	// Called for each event in Allegro event queue.
 	// Here you can handle user input, expiring timers etc.
-	if ((ev->type==ALLEGRO_EVENT_KEY_DOWN) && (ev->keyboard.keycode == ALLEGRO_KEY_ESCAPE)) {
+	if ((ev->type == ALLEGRO_EVENT_KEY_DOWN) && (ev->keyboard.keycode == ALLEGRO_KEY_ESCAPE)) {
 		UnloadCurrentGamestate(game); // mark this gamestate to be stopped and unloaded
 		// When there are no active gamestates, the engine will quit.
 	}
 
-	if ((ev->type==ALLEGRO_EVENT_KEY_DOWN) || (ev->type==ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) || (ev->type==ALLEGRO_EVENT_TOUCH_BEGIN)) {
+	if ((ev->type == ALLEGRO_EVENT_KEY_DOWN) || (ev->type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) || (ev->type == ALLEGRO_EVENT_TOUCH_BEGIN)) {
 		data->color += 50;
 		data->randx = rand() % 9 - 4;
 		data->randy = rand() % 19 - 8;
 
-		if(data->counter < 10) {
+		if (data->counter < 10) {
 			data->score += (10 - data->counter) * 42 * 69;
 		}
 		data->counter = 0;
@@ -97,7 +97,7 @@ void Gamestate_ProcessEvent(struct Game *game, struct GamestateResources* data, 
 		al_play_sample_instance(data->key);
 	}
 
-	if ((ev->type==ALLEGRO_EVENT_KEY_CHAR) && (ev->keyboard.keycode == ALLEGRO_KEY_R)) {
+	if ((ev->type == ALLEGRO_EVENT_KEY_CHAR) && (ev->keyboard.keycode == ALLEGRO_KEY_R)) {
 		if (ev->keyboard.modifiers & ALLEGRO_KEYMOD_CTRL) {
 			data->score = 0;
 			data->sps = 0;
@@ -106,10 +106,14 @@ void Gamestate_ProcessEvent(struct Game *game, struct GamestateResources* data, 
 	}
 }
 
-void* Gamestate_Load(struct Game *game, void (*progress)(struct Game*)) {
+void* Gamestate_Load(struct Game* game, void (*progress)(struct Game*)) {
 	// Called once, when the gamestate library is being loaded.
 	// Good place for allocating memory, loading bitmaps etc.
-	struct GamestateResources *data = malloc(sizeof(struct GamestateResources));
+	struct GamestateResources* data = malloc(sizeof(struct GamestateResources));
+
+	int flags = al_get_new_bitmap_flags();
+	al_set_new_bitmap_flags(flags ^ ALLEGRO_MAG_LINEAR);
+
 	data->font = al_create_builtin_font();
 	data->comicsans = al_load_font(GetDataFilePath(game, "fonts/comicsans.ttf"), 80, ALLEGRO_TTF_MONOCHROME);
 
@@ -120,26 +124,28 @@ void* Gamestate_Load(struct Game *game, void (*progress)(struct Game*)) {
 	al_set_target_bitmap(data->checkerboard);
 	al_lock_bitmap(data->checkerboard, ALLEGRO_PIXEL_FORMAT_ANY, ALLEGRO_LOCK_WRITEONLY);
 	int x, y;
-	for (x = 0; x < al_get_bitmap_width(data->checkerboard); x=x+2) {
-		for (y = 0; y < al_get_bitmap_height(data->checkerboard); y=y+2) {
-			al_put_pixel(x, y, al_map_rgba(0,0,0,32));
-			al_put_pixel(x+1, y, al_map_rgba(0,0,0,0));
-			al_put_pixel(x, y+1, al_map_rgba(0,0,0,0));
-			al_put_pixel(x+1, y+1, al_map_rgba(0,0,0,0));
+	for (x = 0; x < al_get_bitmap_width(data->checkerboard); x = x + 2) {
+		for (y = 0; y < al_get_bitmap_height(data->checkerboard); y = y + 2) {
+			al_put_pixel(x, y, al_map_rgba(0, 0, 0, 32));
+			al_put_pixel(x + 1, y, al_map_rgba(0, 0, 0, 0));
+			al_put_pixel(x, y + 1, al_map_rgba(0, 0, 0, 0));
+			al_put_pixel(x + 1, y + 1, al_map_rgba(0, 0, 0, 0));
 		}
 	}
 	al_unlock_bitmap(data->checkerboard);
 	al_set_target_backbuffer(game->display);
 
-	data->key_sample = al_load_sample( GetDataFilePath(game, "click.flac") );
+	data->key_sample = al_load_sample(GetDataFilePath(game, "click.flac"));
 	data->key = al_create_sample_instance(data->key_sample);
 	al_attach_sample_instance_to_mixer(data->key, game->audio.fx);
 	al_set_sample_instance_playmode(data->key, ALLEGRO_PLAYMODE_ONCE);
 
+	al_set_new_bitmap_flags(flags);
+
 	return data;
 }
 
-void Gamestate_Unload(struct Game *game, struct GamestateResources* data) {
+void Gamestate_Unload(struct Game* game, struct GamestateResources* data) {
 	// Called when the gamestate library is being unloaded.
 	// Good place for freeing all allocated memory and resources.
 	al_destroy_font(data->font);
@@ -150,7 +156,7 @@ void Gamestate_Unload(struct Game *game, struct GamestateResources* data) {
 	free(data);
 }
 
-void Gamestate_Start(struct Game *game, struct GamestateResources* data) {
+void Gamestate_Start(struct Game* game, struct GamestateResources* data) {
 	// Called when this gamestate gets control. Good place for initializing state,
 	// playing music etc.
 	data->blink_counter = 0;
@@ -163,19 +169,19 @@ void Gamestate_Start(struct Game *game, struct GamestateResources* data) {
 	data->max = 0;
 }
 
-void Gamestate_Stop(struct Game *game, struct GamestateResources* data) {
+void Gamestate_Stop(struct Game* game, struct GamestateResources* data) {
 	// Called when gamestate gets stopped. Stop timers, music etc. here.
 }
 
-void Gamestate_Pause(struct Game *game, struct GamestateResources* data) {
+void Gamestate_Pause(struct Game* game, struct GamestateResources* data) {
 	// Called when gamestate gets paused (so only Draw is being called, no Logic not ProcessEvent)
 	// Pause your timers here.
 }
 
-void Gamestate_Resume(struct Game *game, struct GamestateResources* data) {
+void Gamestate_Resume(struct Game* game, struct GamestateResources* data) {
 	// Called when gamestate gets resumed. Resume your timers here.
 }
 
 // Ignore this for now.
 // TODO: Check, comment, refine and/or remove:
-void Gamestate_Reload(struct Game *game, struct GamestateResources* data) {}
+void Gamestate_Reload(struct Game* game, struct GamestateResources* data) {}
