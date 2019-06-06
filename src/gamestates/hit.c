@@ -83,7 +83,7 @@ void Gamestate_ProcessEvent(struct Game* game, struct GamestateResources* data, 
 		// When there are no active gamestates, the engine will quit.
 	}
 
-	if ((ev->type == ALLEGRO_EVENT_KEY_DOWN) || (ev->type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) || (ev->type == ALLEGRO_EVENT_TOUCH_BEGIN)) {
+	if ((ev->type == ALLEGRO_EVENT_KEY_DOWN) || (ev->type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) || (ev->type == ALLEGRO_EVENT_TOUCH_BEGIN) || (ev->type == ALLEGRO_EVENT_JOYSTICK_BUTTON_DOWN)) {
 		data->color += 50;
 		data->randx = rand() % 9 - 4;
 		data->randy = rand() % 19 - 8;
