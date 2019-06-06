@@ -22,12 +22,14 @@
 #include <libsuperderpy.h>
 
 bool GlobalEventHandler(struct Game* game, ALLEGRO_EVENT* ev) {
-	if ((ev->type == ALLEGRO_EVENT_KEY_CHAR) && (ev->keyboard.keycode == ALLEGRO_KEY_F)) {
-		if (ev->keyboard.modifiers & ALLEGRO_KEYMOD_CTRL) {
+	if (ev->keyboard.modifiers & ALLEGRO_KEYMOD_CTRL) {
+		if ((ev->type == ALLEGRO_EVENT_KEY_CHAR) && (ev->keyboard.keycode == ALLEGRO_KEY_F)) {
 			ToggleFullscreen(game);
 		}
+		if ((ev->type == ALLEGRO_EVENT_KEY_DOWN) && (ev->keyboard.keycode == ALLEGRO_KEY_M)) {
+			ToggleMute(game);
+		}
 	}
-
 	return false;
 }
 
