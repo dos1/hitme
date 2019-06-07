@@ -112,14 +112,28 @@ void* Gamestate_Load(struct Game* game, void (*progress)(struct Game*)) {
 	struct GamestateResources* data = malloc(sizeof(struct GamestateResources));
 
 	int flags = al_get_new_bitmap_flags();
-	al_set_new_bitmap_flags(flags ^ ALLEGRO_MAG_LINEAR);
+	al_set_new_bitmap_flags(flags & ~ALLEGRO_MAG_LINEAR);
 
 	data->font = al_create_builtin_font();
 	data->comicsans = al_load_font(GetDataFilePath(game, "fonts/comicsans.ttf"), 80, ALLEGRO_TTF_MONOCHROME);
 
-	data->checkerboard = al_create_bitmap(320, 180);
+	al_set_new_bitmap_flags(flags);
 
 	progress(game); // report that we progressed with the loading, so the engine can draw a progress bar
+
+	data->key_sample = al_load_sample(GetDataFilePath(game, "click.flac"));
+	data->key = al_create_sample_instance(data->key_sample);
+	al_attach_sample_instance_to_mixer(data->key, game->audio.fx);
+	al_set_sample_instance_playmode(data->key, ALLEGRO_PLAYMODE_ONCE);
+
+	return data;
+}
+
+void Gamestate_PostLoad(struct Game* game, struct GamestateResources* data) {
+	int flags = al_get_new_bitmap_flags();
+	al_set_new_bitmap_flags(flags & ~ALLEGRO_MAG_LINEAR);
+
+	data->checkerboard = al_create_bitmap(320, 180);
 
 	al_set_target_bitmap(data->checkerboard);
 	al_lock_bitmap(data->checkerboard, ALLEGRO_PIXEL_FORMAT_ANY, ALLEGRO_LOCK_WRITEONLY);
@@ -133,16 +147,7 @@ void* Gamestate_Load(struct Game* game, void (*progress)(struct Game*)) {
 		}
 	}
 	al_unlock_bitmap(data->checkerboard);
-	al_set_target_backbuffer(game->display);
-
-	data->key_sample = al_load_sample(GetDataFilePath(game, "click.flac"));
-	data->key = al_create_sample_instance(data->key_sample);
-	al_attach_sample_instance_to_mixer(data->key, game->audio.fx);
-	al_set_sample_instance_playmode(data->key, ALLEGRO_PLAYMODE_ONCE);
-
 	al_set_new_bitmap_flags(flags);
-
-	return data;
 }
 
 void Gamestate_Unload(struct Game* game, struct GamestateResources* data) {
